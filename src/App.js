@@ -7,7 +7,6 @@ import { Button } from './Components/Button/Button';
 import { GetImagesApi } from './Components/Api/ImageApi';
 import { Load } from './Loader/Loader';
 import { ToastContainer } from 'react-toastify';
-import { toast } from 'react-toastify';
 
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
@@ -23,28 +22,35 @@ const App = () => {
   const [showModal, setShowModal] = useState(false);
   const [pictures, setPictures] = useState([]);
   const [searchRequest, setSearchRequest] = useState('');
-
   const [loading, setLoading] = useState(false);
-  // const [error, setError] = useState('');
   const [page, setPage] = useState(1);
   const [largeImageSrc, setLargeImageSrc] = useState('');
   const [alt, setAlt] = useState('');
 
-  const getData = (request, page) => {
+  useEffect(() => {
+    getData(searchRequest, page, 'searchBtn');
+  }, [searchRequest]);
+
+  useEffect(() => {
+    getData(searchRequest, page, 'loadMoreBtn');
+  }, [page]);
+
+  const getData = (request, page, target) => {
     GetImagesApi(request, page)
       .then(response => {
         if (response.status === 200 && searchRequest.trim().length) {
-          setPictures([...pictures, ...response.data.hits]);
-          if (pictures.length === 0) {
-            toast.error('По вашему запросу - НИЧЕГО НЕ НАЙДЕНО!');
+          if (target === 'searchBtn') {
+            setPictures([...response.data.hits]);
           }
-          scrollPageDown();
+          if (target === 'loadMoreBtn') {
+            setPictures([...pictures, ...response.data.hits]);
+            scrollPageDown();
+          }
         }
         if (response.status === 404) {
           throw new Error(response.message || 'pictures not exist');
         }
       })
-
       .catch(function (error) {
         console.error('error', error);
       })
@@ -53,31 +59,14 @@ const App = () => {
       });
   };
 
-  //   componentDidMount() {
-  //     this.getData(this.state.searchRequest, this.state.page);
-  //   }
-
-  //   componentDidUpdate(prevProps, prevState) {
-  //     if (prevState.searchRequest !== this.state.searchRequest) {
-  //       this.setState({ pictures: [] });
-  //     }
-  //   }
-  useEffect(() => {
-    getData(searchRequest, page);
-  }, [searchRequest, page]);
-
   const getSearchRequest = request => {
     setLoading(true);
     setSearchRequest(request);
-    getData(request, page);
   };
 
   const pageIncrement = () => {
     setPage(page + 1);
-    getData(searchRequest, page + 1);
     setLoading(true);
-
-    return;
   };
 
   const toggleModal = () => {
@@ -112,7 +101,7 @@ const App = () => {
       {loading && <Load />}
       {pictures.length > 0 && (
         <div className={'container'}>
-          <Button onClick={pageIncrement} />
+          <Button id="loadmore" onClick={pageIncrement} />
         </div>
       )}
     </div>
