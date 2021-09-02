@@ -1,5 +1,5 @@
 // import React, { Component } from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Searchbar } from './Components/Searchbar/Searchbar';
 import { Modal } from './Components/Modal/Modal';
 import { ImageGallery } from './Components/ImageGallery/ImageGallery';
@@ -7,6 +7,7 @@ import { Button } from './Components/Button/Button';
 import { GetImagesApi } from './Components/Api/ImageApi';
 import { Load } from './Loader/Loader';
 import { ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
@@ -35,6 +36,17 @@ const App = () => {
     getData(searchRequest, page, 'loadMoreBtn');
   }, [page]);
 
+  const isFirstRun = useRef(true);
+  useEffect(() => {
+    if (isFirstRun.current) {
+      isFirstRun.current = false;
+      return;
+    }
+    if (pictures.length === 0) {
+      showMessage();
+    }
+  }, [pictures]);
+
   const getData = (request, page, target) => {
     GetImagesApi(request, page)
       .then(response => {
@@ -57,6 +69,10 @@ const App = () => {
       .then(() => {
         setLoading(false);
       });
+  };
+
+  const showMessage = () => {
+    toast.error('По вашему запросу - НИЧЕГО НЕ НАЙДЕНО!');
   };
 
   const getSearchRequest = request => {
