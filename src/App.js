@@ -36,6 +36,7 @@ const App = () => {
     getData(searchRequest, page, 'loadMoreBtn');
   }, [page]);
 
+  // not 1st time render
   const isFirstRun = useRef(true);
   useEffect(() => {
     if (isFirstRun.current) {
